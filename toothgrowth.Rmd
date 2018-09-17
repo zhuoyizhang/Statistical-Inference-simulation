@@ -1,0 +1,87 @@
+---
+title: "Statistical Inference Course Project - Part 2 ToothGrowth"
+author: "Zhuoyi Zhang"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Load the ToothGrowth data and perform some basic exploratory data analyses
+```{r}
+library(datasets)
+summary(ToothGrowth)
+
+```
+##Provide a basic summary of the data.
+There are two groups of suppliments, OJ and VC, 30 each.  Based on the scatter plot, the higher the dose is, the more the tooth grows.   At dose level of 0.5 and 1, VC supplement seems less efficient than OJ.  At the level of 2, it is hard to tell.
+
+```{r}
+
+library(ggplot2)
+ggplot(ToothGrowth, aes(x=dose, y=len,shape=supp, color=supp)) + geom_point()
+
+
+```
+
+
+
+##Use confidence intervals and/or hypothesis tests to compare tooth growth by supp and dose. (Only use the techniques from class, even if there's other approaches worth considering)
+
+###Perform t test by dosage level.
+H0 is that the average of length between two supplements are the same at each dosage level
+Ha is that the average of length between two supplements are different
+
+```{r}
+t05 <- t.test(len ~ supp, data=subset(ToothGrowth,dose ==0.5), paired=FALSE, var.equal=FALSE)
+t1 <- t.test(len ~ supp, data=subset(ToothGrowth,dose ==1), paired=FALSE, var.equal=FALSE)
+t2 <- t.test(len ~ supp, data=subset(ToothGrowth,dose ==2), paired=FALSE, var.equal=FALSE)
+
+dose<-c(0.5,1,2)
+p<-c(t05$p.value,t1$p.value,t2$p.value)
+conflow<-c(t05$conf.int[1],t1$conf.int[1],t2$conf.int[1])
+confhigh<-c(t05$conf.int[2],t1$conf.int[2],t2$conf.int[2])
+
+
+data.frame(dose,p,conflow,confhigh)
+
+
+
+```
+At the 0.5 and 1 dosage level, the p value is less than 0.05 and the confidence intervals do not contain 0, it means that 95% confidence level, supplement OJ is more efficient than VC.  We reject the null hypothesis that there is no difference in growth of tooth by different supplment.
+However, at dosage level 2, with 95% confidence, we fail to reject the null hypothesis, so there is no significant difference in tooth growth by different supplement.
+
+
+
+###Perform t test between two dosage level
+H0 is that the average of length between two dosage levels are the same
+Ha is that the average of length between two dosage levels are different
+
+```{r}
+t05_1 <- t.test(len ~ dose, data=subset(ToothGrowth,dose %in% c(0.5,1)), paired=FALSE, var.equal=FALSE)
+t05_2 <- t.test(len ~ dose, data=subset(ToothGrowth,dose %in% c(0.5,2)), paired=FALSE, var.equal=FALSE)
+t1_2 <- t.test(len ~ dose, data=subset(ToothGrowth,dose %in% c(2,1)), paired=FALSE, var.equal=FALSE)
+
+dosepair<-c("05_1","05_2","1_2")
+p<-c(t05_1$p.value,t05_2$p.value,t1_2$p.value)
+conflow<-c(t05_1$conf.int[1],t05_2$conf.int[1],t1_2$conf.int[1])
+confhigh<-c(t05_1$conf.int[2],t05_2$conf.int[2],t1_2$conf.int[2])
+
+
+data.frame(dosepair,p,conflow,confhigh)
+
+
+
+```
+The p values are much lower than the 0.05 threhold, and the confidence interview is below 0.  
+We could conclude that the higher the dosage is, the higher the tooth growth is.
+
+##State your conclusions and the assumptions needed for your conclusions.
+The tooth growth heavily depends on the dosage, the higher the dosage is, the higher the growth is.
+At the 0.5 and 1 dosage level, supplement OJ is more efficient than VC.  
+However, at dosage level 2, there is no significant difference in tooth growth by different supplement.
+
+

@@ -1,0 +1,126 @@
+---
+title: "Statistical Inference Course Project - Part 1 Simulation"
+author: "Zhuoyi Zhang"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+##Overview
+
+In this project I will investigate the exponential distribution and compare it with the Central Limit Theorem.  I will investigate the distribution of averages of 40 exponentials and illustrate via simulation and associated explanatory figures.
+
+
+##Basics
+Exponential distribution describes times between events happening at constant rate λ with expected value 1/λ. 
+
+The exponential distribution is used to model the time between the occurrence of events in an interval of time, or the distance between events in space. The exponential distribution may be useful to model events such as
+
+* The time between goals scored in a World Cup soccer match
+* The duration of a phone call to a help center
+
+
+If the below conditions are true, then X is an exponential random variable, and the distribution of X is an exponential distribution.
+
+* X is the time (or distance) between events, with X > 0.  
+* The occurrence of one event does not affect the probability that a second event will occur. That is, events occur independently.  
+* The rate at which events occur is constant. The rate cannot be higher in some intervals and lower in other intervals.  
+* Two events cannot occur at exactly the same instant.  
+
+
+
+##Explore the sample distribution: 
+First, I generate histograms of randomized exponential distribution with size 20,100,500 and 1000 in one graph to get a sense of four sample distributions. 
+The [PDF curve from Wiki](https://en.wikipedia.org/wiki/Exponential_distribution#/media/File:Exponential_pdf.svg) is very close to the four sample distributions.
+The sample mean is drawn as a red vertical line in each sub graph. We can see that when size is 20 and 100, the sample mean is close to 5 which is the theoretical mean (1/0.2=5), when the size is 500 and 1000, the sample mean is extremely close to theoretical mean.  The sample standard deviation is also getting closer to theoretical standard deviation(1/0.2=5) as the n increases.
+
+``` {r}
+lambda = 0.2
+set.seed(5555)
+r20<-NULL
+r100<-NULL
+r500<-NULL
+r1000<-NULL
+
+par(mfrow=c(2,2))
+
+z.plot<-function(n){
+        r<-rexp(n,lambda)
+        hist(r,main=paste("Exponential distibution with size ",n),xlab="x")
+        abline(v=mean(r), col="red")
+        abline(v=sd(r), col="blue")
+        return(r)
+}
+r20 <- z.plot(20)
+r100<-z.plot(100)
+r500<-z.plot(500)
+r1000<-z.plot(1000)
+
+
+
+```
+
+
+##Simulation
+###Show the sample mean and compare it to the theoretical mean of the distribution.
+According to Central Limitation Theorem, For large enough n, the distribution of Sn is close to the normal distribution with mean µ and variance σ2/n.  Sn is sample average, n=40. The code is to randomize 1000 sample averages of size 40.  And compare the sample statistics with the theoretical statistics.
+
+```{r}
+
+##generate simulated data, 1000 samples of size 40
+r <- matrix(rexp(40*1000, lambda), nrow=1000, ncol=40)
+
+##calculate the mean of each 40
+mns = NULL
+for (i in 1 : 1000) mns = c(mns, mean(r[i,]))
+hist(mns, main ="Simulated Averages", prob=TRUE, ylab="Density", xlab="Simulated Averages")
+
+##caluclate the simulated mean and variance
+simulatedMean<- mean(mns)
+SimulatedVariance <- var(mns)
+
+##calulate the theorectical mean and variance
+theoreticalMean <- 1/0.2
+theoreticalVar <- (1/0.2)^2 /40
+
+abline(v=simulatedMean, col="blue")
+abline(v=theoreticalMean, col="purple")
+
+legend('right', c("simulated", "theoretical"), lty = c(2,1), col = c("blue", "purple"))
+
+
+
+
+```
+
+The simulated mean is `r simulatedMean` and the theoretical mean is `r theoreticalMean`. They are very close. The sample is in agreeance with CLT.
+
+###Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+The simulated variance is `r SimulatedVariance`nand the theoretical variance is `r theoreticalVar`. They are very close too.The sample is in agreeance with CLT.
+
+
+
+###Show that the distribution is approximately normal.
+Plot a normal distribution to overlay on the sample distribution. Use theoretical mean and theoretical standard deviation. If the two plots match well with each other, it means the distribution is approximately normal.
+
+```{r}
+
+hist(mns, main ="Simulated Averages", prob=TRUE, ylab="Density", xlab="Simulated Averages")
+curve(dnorm(x,mean=5, sd=((1/0.2)^2 /40)^0.5), from=0, to=9,add = TRUE, col = "violet")
+
+
+```
+
+
+##Conclusions
+Based on graphs and data, the simulation data is in agreeance with Central Limiation Theorem.
+
+
